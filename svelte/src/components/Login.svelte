@@ -6,24 +6,60 @@
     height: 50%;
     align-items: center;
     justify-content: center;
-    display:flex;
+    display:block;
     margin: auto;
+    padding: 1%;
     
 }
+.warning
+{
+    width: 50%;
+    margin-top: 1%;
+    color: red;
+    background-color:rgb(191, 169, 169)}
 </style>
 <script>
     import { debug, tick } from "svelte/internal";
+    import {navigate} from 'svelte-routing'
+    import {jwtDecode} from 'jwt-decode'
 
 let password;
 let username;
 let submit;
-async function update()
+let warnin;
+let inputg=false;
+async function checkuse()
 {
     await tick();
-    console.log(password.value)
     console.log(username.value)
+    const rege=new RegExp('^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$')
+    if (rege.test(username.value)==true)
+    {
+        warnin=false;
+        console.log(warnin)
+        return true
+
+    }
+    else
+    {
+        warnin=true;
+        console.log(warnin)
+        return false
+    }
     
 
+}
+async function checkin()
+{
+    await tick()
+    if(username.value =="" || password.value =="")
+    {
+        inputg=false;
+    }
+    else
+    {
+        inputg=true;
+    }
 }
 async function submitBack()
 {
@@ -31,8 +67,8 @@ async function submitBack()
     let passVal=password.value;
     let userVal=username.value;
     let cred={
-        Pass:passVal,
-        Username:userVal
+        enPass:passVal,
+        RouterID:userVal
     }
     
     let response=await fetch ("http://localhost:8000/login",
@@ -47,7 +83,16 @@ async function submitBack()
     console.log("Resposne",response);
     let data=await response.json()
     let responsedata=JSON.stringify(data)
-    console.log(responsedata)
+    if(response.ok)
+    {
+        console.log("User validated")
+        sessionStorage.setItem("Valid",data.Auth)
+        let dec=jwtDecode(data.Auth)
+        console.log(dec)
+        navigate('/Signup')
+    }
+
+    
 
 
 }
@@ -55,13 +100,19 @@ async function submitBack()
 </script>
 
 <div class="Logincard" >
+    <center>
  
     <h3>Login</h3>
-    <h4>Username</h4>
-    <input bind:this={username} on:input={update}>
+    <h4>Router ID</h4>
+    <input bind:this={username} on:blur={checkuse} on:input={checkin}>
+    {#if warnin ==true }
+    <div class='warning'>Incorrect Router ID</div>
+    {/if}
     <h5>Password</h5>
-    <input bind:this={password} on:input={update}>
+    <input bind:this={password} on:input={checkin}>
+{#if inputg == true}
     <button bind:this={submit} on:click={submitBack}>Submit</button>
-   
+{/if}
+   </center>
 
 </div>
