@@ -1,6 +1,11 @@
+<script context='module'>
+import {writable} from 'svelte/store'
+export let signedin=writable(false);
+</script>
 <script>
+    
     import { tick } from "svelte";
-
+   
 let router;
 let password;
 let asn;
@@ -23,6 +28,7 @@ async function sub()
 }
     )
     let data=await resp.json();
+    signedin.set(True)
     console.log(data);
     
 }

@@ -18,8 +18,13 @@
     color: red;
     background-color:rgb(191, 169, 169)}
 </style>
+<script context="module">
+  import {writable} from 'svelte/store'
+  export let loggedin=writable(false);
+</script>
 <script>
     import { debug, tick } from "svelte/internal";
+  
     import {navigate} from 'svelte-routing'
     import {jwtDecode} from 'jwt-decode'
 
@@ -70,12 +75,13 @@ async function submitBack()
         enPass:passVal,
         RouterID:userVal
     }
-    
+    console.log(passVal)
     let response=await fetch ("http://localhost:8000/login",
     {
         method:"POST",
         headers:{
-            "Content-Type":"application/json"
+            "Content-Type":"application/json",
+            "Access-Control-Allow-Origin":"*"
         },
         body:JSON.stringify({cred})
     }
@@ -87,6 +93,7 @@ async function submitBack()
     {
         console.log("User validated")
         sessionStorage.setItem("Valid",data.Auth)
+        loggedin.set(True)
         let dec=jwtDecode(data.Auth)
         console.log(dec)
         navigate('/Signup')
