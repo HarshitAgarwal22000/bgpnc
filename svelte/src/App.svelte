@@ -18,7 +18,7 @@ import Signup from './components/Signup.svelte'
     <Route path= '/Login' component={Login} />
     <Route path='/Signup' component={Signup} />
 </Router>
-{#if $signedin==false && $loggedin==false}
+{#if ($signedin==false && $loggedin==false)}
 
 <Login />
 {:else}

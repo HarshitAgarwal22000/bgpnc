@@ -21,6 +21,7 @@
 <script context="module">
   import {writable} from 'svelte/store'
   export let loggedin=writable(false);
+  export let tok=writable(null);
 </script>
 <script>
     import { debug, tick } from "svelte/internal";
@@ -93,9 +94,12 @@ async function submitBack()
     {
         console.log("User validated")
         sessionStorage.setItem("Valid",data.Auth)
+        tok.set(data.Auth)
+        sessionStorage.setItem("User",userVal)
         loggedin.set(true)
         let dec=jwtDecode(data.Auth)
         console.log(dec)
+        await tick()
         
     }
 

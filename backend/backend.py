@@ -1,4 +1,4 @@
-from fastapi import FastAPI,HTTPException
+from fastapi import FastAPI,HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 import jwt
 import time
@@ -22,17 +22,19 @@ db_con={
     "database":"sv"
 }
 def check_token(rid,token):
+   
     conn=mariadb.connect(**db_con)
     cursor=conn.cursor()
-    query='select * from token_jwt where token_id = ?'
-    cursor.execute(query,(rid,))
-    fetchToken=cursor.fetchone()
+    query='select token_id from token_jwt where token_id = ?'
+    cursor.execute(query,(token,))
+    fetchToken= cursor.fetchone()
+    print("Token",fetchToken)
     sig=token.split('.')
     fetchSignature=fetchToken[0].split('.')
     if(sig[2]==fetchSignature[2]):
-        dect=jwt.decode(token)
+        dect=jwt.decode(token, algorithms='HS256')
         if(dect['exp']<time.time()):
-            return jwt.ExpiredSignatureError
+            return "Dawood"
         else:
 
 
@@ -128,10 +130,30 @@ async def sign(router_id : str, data: dict):
         d=[token, payload['exp'], payload['iat'], "1"]
         cursor.execute(sta,d)
         con.commit()
-        return({"Message":"Signed In Successfully"})
+        returnDat={
+            "Auth":token,
+            "Message":"SIgned in Succesfully"
+        }
+        return(returnDat)
     except mariadb.Error as error:
     
         print(error)
         return({"Message":"Failed"})
+@app.get('/interfaces/{router_id}')
+async def get_interfaces(router_id:str, authorization : str= Header(...)):
+    print("Dubai",authorization)
     
+    return{"get":"dara"}
+@app.post('/logout')
+async def logout(data: dict):
+    con=mariadb.connect(**db_con)
+    print(data)
+    cursor=con.cursor()
+    token=data['Token']
+    stat='UPDATE token_jwt SET valid="0" WHERE token_id = ?'
+    par=[token]
+    cursor.execute(stat,par)
+    con.commit()
+    return({"message":"API hit"})
+
 

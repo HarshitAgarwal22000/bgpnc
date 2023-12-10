@@ -5,7 +5,7 @@ export let signedin=writable(false);
 <script>
     
     import { tick } from "svelte";
-   
+   import {tok} from './Login.svelte'
 let router;
 let password;
 let asn;
@@ -30,6 +30,10 @@ async function sub()
     let data=await resp.json();
     signedin.set(True)
     console.log(data);
+    sessionStorage.setItem("Valid",data.Auth)
+    sessionStorage.setItem("User",router)
+    tok.set(data.Auth)
+    await tick()
     
 }
 
