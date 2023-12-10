@@ -93,10 +93,10 @@ async function submitBack()
     {
         console.log("User validated")
         sessionStorage.setItem("Valid",data.Auth)
-        loggedin.set(True)
+        loggedin.set(true)
         let dec=jwtDecode(data.Auth)
         console.log(dec)
-        navigate('/Signup')
+        
     }
 
     
