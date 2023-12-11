@@ -1,6 +1,8 @@
 from fastapi import FastAPI,HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 import jwt
+import subprocess
+import os
 import time
 import mariadb
 
@@ -25,25 +27,20 @@ def check_token(rid,token):
    
     conn=mariadb.connect(**db_con)
     cursor=conn.cursor()
-    query='select token_id from token_jwt where token_id = ?'
+    query='select token_id from token_jwt where (token_id = ? && valid="1")'
     cursor.execute(query,(token,))
-    fetchToken= cursor.fetchone()
+    fetchToken= cursor.fetchone()[0]
     print("Token",fetchToken)
-    sig=token.split('.')
-    fetchSignature=fetchToken[0].split('.')
-    if(sig[2]==fetchSignature[2]):
-        dect=jwt.decode(token, algorithms='HS256')
-        if(dect['exp']<time.time()):
-            return "Dawood"
-        else:
-
-
-            return True
+    dect=jwt.decode(token, SECRET_KEY, algorithms="HS256")
+    db=jwt.decode(fetchToken, SECRET_KEY, algorithms='HS256')
+    if(db==dect):
+        return True
     else:
         return False
+        
 
 
-SECRET_KEY="DUBAI"
+SECRET_KEY=os.urandom(32)
 @app.get('/')
 def home():
     return ({"darab":"dinsid"})
@@ -67,9 +64,11 @@ def login(data : dict):
             payload={
         "exp":int(time.time())+86400,
         "iat":int(time.time()),
+    
         "Success":True,
         "User":"Validated",
         "Username":rid,
+        
     }
             print(payload['exp'])
             token=jwt.encode(payload,SECRET_KEY,algorithm="HS256")
@@ -115,7 +114,8 @@ async def sign(router_id : str, data: dict):
         "iat":int(time.time()),
         "rid":router_id,
         'password':datas['Password'],
-        'Asn':datas['Asn']
+        'Asn':datas['Asn'],
+    
 
     }
  
@@ -141,7 +141,12 @@ async def sign(router_id : str, data: dict):
         return({"Message":"Failed"})
 @app.get('/interfaces/{router_id}')
 async def get_interfaces(router_id:str, authorization : str= Header(...)):
-    print("Dubai",authorization)
+    if(check_token(router_id, authorization)):
+          result = subprocess.run(["sudo", "vtysh", "-c", 'show interface'], capture_output=True, text=True, check=True)
+          return ({"message":f"{result.stdout}"})
+    else:
+        return ({"message":"Not valid"})
+ 
     
     return{"get":"dara"}
 @app.post('/logout')

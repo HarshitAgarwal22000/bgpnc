@@ -5,6 +5,7 @@
 
 </script>
 <script>
+    let interfaces;
     import {onMount} from 'svelte'
     import {tick} from 'svelte/internal'
     onMount(async()=>{
@@ -20,8 +21,9 @@
 
     }
     )
-    const data=re.json()
-    console.log(data)
+    const data=await re.json()
+    console.log(data.message)
+    interfaces.innerHTML=data.message;
     })
     
     async function logoutuser()
@@ -71,6 +73,7 @@
         <h3>
         Interfaces
         </h3>
+        <div bind:this={interfaces}></div>
     </div>
     <div class="cont-neighbors">
         <h3>Neighbors</h3>
