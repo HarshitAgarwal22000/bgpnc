@@ -6,6 +6,8 @@
 </script>
 <script>
     let interfaces;
+    let neighbor;
+    let bgps;
     import {onMount} from 'svelte'
     import {tick} from 'svelte/internal'
     onMount(async()=>{
@@ -23,7 +25,32 @@
     )
     const data=await re.json()
     console.log(data.message)
-    interfaces.innerHTML=data.message;
+    interfaces.innerText=data.message;
+    let response=await fetch(`http://localhost:8000/neighbors/${user}`,
+    {
+    method:'POST',
+    headers:{
+        'Authorization':`${tok}`,
+        'Content-Type':'application/json'
+    },
+    
+}
+    )
+    let datas=await response.json()
+    console.log(datas)
+    neighbor.innerText=datas.message
+    let respo=await fetch(`http://localhost:8000/bgp/${user}`,{
+        method:'POST',
+        headers:{
+            'Authorization':`${tok}`,
+            'Content-Type':'application/json'
+        },
+        
+    })
+    let datab=await respo.json()
+    console.log(datab)
+    bgps.innerText=datab.message
+
     })
     
     async function logoutuser()
@@ -77,12 +104,17 @@
     </div>
     <div class="cont-neighbors">
         <h3>Neighbors</h3>
+        <div bind:this={neighbor}></div>
     </div>
     <div  class='cont-advertised'>
         <h3>Advertised Routes</h3>
+       
     </div>
     <div class='cont-bgp'>
-        <h3>BGP State</h3></div>
+        <h3>BGP State</h3>
+    <div bind:this={bgps}>
+        </div>
+    </div>
     <div class='cont-routingtable'>
         <h3>Routing Table</h3>
         </div>

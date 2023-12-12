@@ -149,6 +149,22 @@ async def get_interfaces(router_id:str, authorization : str= Header(...)):
  
     
     return{"get":"dara"}
+@app.post('/neighbors/{router_id}')
+async def neighbors(router_id:str, authorization : str=Header(...)):
+    if(check_token(router_id,authorization)):
+        result=subprocess.run(['sudo','vtysh','-c',"show bgp neighbors"], capture_output=True, text=True, check=True)
+        print(result.stdout)
+    
+    return ({"message":f"{result.stdout}"})
+@app.post('/bgp/{router_id}')
+async def bgp(router_id:str, authorization: str=Header(...)):
+    if(check_token(router_id, authorization)):
+        result=subprocess.run(['sudo','vtysh','-c',"show ip bgp summary"], capture_output=True, text=True, check=True)
+        print(result.stdout)
+        return({"message":f"{result.stdout}"})
+    else:
+        print("Error")
+    
 @app.post('/logout')
 async def logout(data: dict):
     con=mariadb.connect(**db_con)
